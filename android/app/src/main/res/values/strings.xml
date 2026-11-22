@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Permis B</string>
+    <string name="title_activity_main">Permis B</string>
+    <string name="package_name">be.fred.permisb</string>
+    <string name="custom_url_scheme">be.fred.permisb</string>
+</resources>
