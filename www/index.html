@@ -27,6 +27,7 @@ main{max-width:720px;margin:0 auto;padding:12px}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--pri2),var(--ok));border-radius:8px;transition:width .4s}
 .btn{display:inline-block;border:0;border-radius:10px;padding:11px 16px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;margin:4px 4px 4px 0;text-decoration:none}
 .btn.sec{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+.fig{margin:10px auto 14px;text-align:center;max-width:340px}.fig svg{width:100%;height:auto;max-height:200px}.fig svg.fs{width:96px;height:96px}.fig figcaption{font-size:.85em;color:var(--mut);margin-top:4px}
 .btn.read{background:#eceef1;color:#7b8190;border:1.5px solid #d5d9e0}
 .list button.li.read{color:#8a8f9c;background:#f4f5f7}
 .next{margin-top:14px;padding:12px;border-radius:12px;background:#eef4ff;border:1px solid #d6e3ff}.next h3{margin:0 0 6px}
@@ -179,23 +180,71 @@ function hl(s){return esc(s).replace(NUMRE,'<strong class="n">$1</strong>').repl
 const isLiP=p=>/^(- |\. |• |o )/.test(p);
 const isHeadP=p=>!isLiP(p)&&p.length<70&&!/[.,;:)]$/.test(p)&&/^[A-ZÉÈÀÂÎÔÙ0-9]/.test(p)&&!/^\d+°/.test(p);
 const isKeyP=p=>{NUMRE.lastIndex=0;KEYRE.lastIndex=0;const r=NUMRE.test(p)||KEYRE.test(p);NUMRE.lastIndex=0;KEYRE.lastIndex=0;return r&&!/Regardez|vidéo|animation|^Conseil :?$/i.test(p);};
-function essentialParas(paras){const n=paras.length,key=paras.map(isKeyP),head=paras.map(isHeadP),li=paras.map(isLiP),keep=new Array(n).fill(false);
+
+/* ---------- SCHÉMAS ---------- */
+const SV=(w,h,inner)=>'<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" font-family="Arial,sans-serif">'+inner+'</svg>';
+const BIKE=(x,y,s,c)=>'<g transform="translate('+x+' '+y+') scale('+s+')" stroke="'+c+'" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="-18" cy="10" r="11"/><circle cx="18" cy="10" r="11"/><path d="M-18 10 L-6 -10 H12 L18 10 M-6 -10 L2 10 L12 -10 M-10 -15 H-2 M10 -15 H16"/></g>';
+const PED=(x,y,s,c)=>'<g transform="translate('+x+' '+y+') scale('+s+')" stroke="'+c+'" stroke-width="5" fill="none" stroke-linecap="round"><circle cx="0" cy="-22" r="6" fill="'+c+'"/><path d="M0 -14 L0 6 M0 6 L-9 24 M0 6 L9 24 M-11 -6 L0 -12 L11 -2"/></g>';
+const BLUE=(inner)=>'<circle cx="50" cy="50" r="46" fill="#1f5fae" stroke="#fff" stroke-width="3"/>'+inner;
+const CART=(x,y,c,rot)=>'<g transform="translate('+x+' '+y+') rotate('+(rot||0)+')"><rect x="-11" y="-19" width="22" height="38" rx="5" fill="'+c+'"/><rect x="-8" y="-11" width="16" height="9" rx="2" fill="#dbe8f5"/><rect x="-8" y="7" width="16" height="6" rx="2" fill="#dbe8f5"/></g>';
+const ROADV=(x,w,h)=>'<rect x="'+x+'" y="0" width="'+w+'" height="'+h+'" fill="#8d939b"/>';
+const DASHV=(x,h,c)=>'<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+h+'" stroke="'+(c||'#fff')+'" stroke-width="3" stroke-dasharray="14 10"/>';
+const LINEV=(x,h)=>'<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+h+'" stroke="#fff" stroke-width="3"/>';
+const TXT=(x,y,t,o)=>'<text x="'+x+'" y="'+y+'" font-size="'+((o&&o.s)||12)+'" fill="'+((o&&o.c)||'#222')+'" text-anchor="'+((o&&o.a)||'middle')+'" font-weight="'+((o&&o.b)?'700':'400')+'">'+t+'</text>';
+const ARROWH=(x1,x2,y,t)=>'<g stroke="#c4161c" stroke-width="2"><line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'"/><path d="M'+x1+' '+(y-5)+' V'+(y+5)+' M'+x2+' '+(y-5)+' V'+(y+5)+'"/></g>'+TXT((x1+x2)/2,y-6,t,{c:'#c4161c',b:1});
+const SIGN=k=>signSVG(k).replace('class="sign"','class="sign fs"');
+const FIGS=[
+ {l:3,re:/signal d'obligation \(D7\)/,cap:"D7 : piste cyclable obligatoire",svg:()=>SV(100,100,BLUE(BIKE(50,48,1.1,'#fff')))},
+ {l:3,re:/\(D9\)/,cap:"D9 : piétons et vélos côte à côte",svg:()=>SV(100,100,BLUE('<line x1="50" y1="8" x2="50" y2="92" stroke="#fff" stroke-width="3"/>'+PED(30,52,.9,'#fff')+BIKE(71,50,.55,'#fff')))},
+ {l:3,re:/\(D11\)/,cap:"D11 : symboles l'un au-dessus de l'autre",svg:()=>SV(100,100,BLUE('<line x1="10" y1="50" x2="90" y2="50" stroke="#fff" stroke-width="3"/>'+PED(50,32,.6,'#fff')+BIKE(50,70,.55,'#fff')))},
+ {l:3,re:/deux lignes discontinues parallèles de couleur blanche, entre/,cap:"Piste cyclable marquée sur la chaussée : deux lignes discontinues parallèles, à droite",svg:()=>SV(220,150,ROADV(20,180,150)+DASHV(110,150,'#f5c400')+LINEV(150,150)+DASHV(165,150)+'<rect x="152" y="0" width="12" height="150" fill="#c9776a" opacity=".55"/>'+BIKE(158,75,.45,'#fff')+CART(70,90,'#1f5fae',180)+CART(130,60,'#c4161c'))},
+ {l:2,re:/^2\. Une ligne blanche continue$/,cap:"Ligne discontinue : on peut la franchir pour dépasser. Ligne continue : interdit.",svg:()=>SV(300,130,ROADV(10,130,130)+DASHV(75,130)+TXT(75,125,'discontinue',{c:'#fff',b:1})+ROADV(160,130,130)+LINEV(225,130)+TXT(225,125,'continue',{c:'#fff',b:1})+CART(45,70,'#1f5fae')+CART(195,70,'#1f5fae')+'<path d="M45 45 Q70 25 105 15" stroke="#2e9d4f" stroke-width="4" fill="none" stroke-dasharray="6 4"/>'+TXT(110,40,'✓',{s:22,c:'#2e9d4f',b:1})+'<path d="M195 45 Q220 25 255 15" stroke="#c4161c" stroke-width="4" fill="none" stroke-dasharray="6 4"/>'+TXT(262,40,'✗',{s:22,c:'#c4161c',b:1}))},
+ {l:2,re:/^Le principe de la tirette$/,cap:"La tirette : juste devant le rétrécissement, une voiture de chaque bande, à tour de rôle",svg:()=>SV(300,140,'<path d="M0 20 H300 V90 H180 L150 60 H0Z" fill="#8d939b"/><path d="M0 55 H150" stroke="#fff" stroke-width="3" stroke-dasharray="14 10"/><path d="M150 60 L180 90" stroke="#fff" stroke-width="3"/>'+CART(40,38,'#1f5fae',90)+CART(90,38,'#1f5fae',90)+CART(140,38,'#1f5fae',90)+CART(60,73,'#c4161c',90)+CART(118,73,'#c4161c',90)+CART(205,38,'#c4161c',90)+CART(250,38,'#1f5fae',90)+TXT(150,120,'… bleu, rouge, bleu, rouge…',{c:'#222',b:1}))},
+ {l:2,re:/^La zone d’évitement$/,cap:"Zone d'évitement : interdit d'y circuler, de s'y arrêter et d'y stationner",svg:()=>SV(260,100,'<rect x="0" y="10" width="260" height="80" fill="#8d939b"/><path d="M40 50 L130 30 L220 50 L130 70Z" fill="#8d939b" stroke="#fff" stroke-width="3"/><clipPath id="ze"><path d="M40 50 L130 30 L220 50 L130 70Z"/></clipPath><g clip-path="url(#ze)" stroke="#fff" stroke-width="4">'+[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>'<line x1="'+(30+i*18)+'" y1="80" x2="'+(60+i*18)+'" y2="20"/>').join('')+'</g>')},
+ {l:2,re:/^1\. Qu'est-ce qu'une bande de bus \?$/,cap:"Bande de bus (signal F17 et large ligne discontinue)",svg:()=>SV(240,130,'<rect x="10" y="10" width="70" height="70" rx="6" fill="#1f5fae"/>'+TXT(45,52,'BUS',{s:20,c:'#fff',b:1})+ROADV(110,120,130)+'<line x1="175" y1="0" x2="175" y2="130" stroke="#fff" stroke-width="7" stroke-dasharray="16 10"/>'+TXT(202,70,'BUS',{s:14,c:'#fff',b:1})+CART(142,80,'#1f5fae'))},
+ {l:1,re:/^La chaussée à voie centrale$/,cap:"Chaussée à voie centrale : les voitures au milieu, les cyclistes sur les bandes latérales",svg:()=>SV(260,130,ROADV(10,240,130)+[70,76,184,190].map(x=>'<line x1="'+x+'" y1="0" x2="'+x+'" y2="130" stroke="#fff" stroke-width="2.5" stroke-dasharray="8 8"/>').join('')+BIKE(40,40,.5,'#fff')+BIKE(220,90,.5,'#fff')+CART(130,70,'#1f5fae')+TXT(130,14,'70 km/h',{c:'#fff',b:1}))},
+ {l:1,re:/^- 1 mètre en agglomération,$/,cap:"Distance latérale avec un cycliste : 1 m en agglomération, 1,5 m hors agglomération",svg:()=>SV(260,110,'<rect x="0" y="10" width="260" height="90" fill="#8d939b"/>'+BIKE(130,78,.55,'#fff')+CART(130,40,'#1f5fae',90)+'<g stroke="#f5c400" stroke-width="2"><line x1="170" y1="50" x2="170" y2="68"/><path d="M165 50 H175 M165 68 H175"/></g>'+TXT(205,64,'1 m / 1,5 m',{c:'#f5c400',b:1}))},
+ {l:3,re:/^La chaussée à voie centrale$/,cap:"Chaussée à voie centrale",svg:()=>FIGS[8].svg()},
+ {l:13,re:/^2\. La règle des deux seconds/,cap:"Règle des 2 secondes : la voiture devant passe le poteau, tu dis « un crocodile, deux crocodiles » avant d'y arriver",svg:()=>SV(300,90,'<rect x="0" y="25" width="300" height="50" fill="#8d939b"/><rect x="200" y="5" width="5" height="40" fill="#555"/>'+CART(230,50,'#c4161c',90)+CART(60,50,'#1f5fae',90)+ARROWH(75,200,20,'2 secondes')+TXT(150,90,'',{}))},
+ {l:4,re:/^2\. Triangle de danger$/,cap:"Triangle de danger : 100 m sur autoroute (30 m sur route ordinaire), visible à 50 m",svg:()=>SV(300,90,'<rect x="0" y="30" width="300" height="45" fill="#8d939b"/>'+CART(250,52,'#1f5fae',90)+'<path d="M50 62 L60 44 L70 62Z" fill="#fff" stroke="#c4161c" stroke-width="3"/>'+ARROWH(60,238,22,'100 m'))},
+ {l:5,re:/^1\. Triangle de danger$/,cap:"Triangle de danger : au moins 30 m (100 m sur autoroute)",svg:()=>FIGS.find(f=>f.l===4).svg().replace('>100 m<','>30 m<')},
+ {l:29,re:/^3\. Le triangle de danger$/,cap:"Triangle de danger : 30 m sur route ordinaire et route pour automobiles, 100 m sur autoroute, visible à 50 m",svg:()=>FIGS.find(f=>f.l===4).svg().replace('>100 m<','>30 m / 100 m<')},
+ {l:18,re:/^1\. Le feu rouge$/,cap:"Feu rouge : arrêt devant la ligne d'arrêt (sinon devant le feu)",svg:()=>SV(200,130,'<rect x="20" y="5" width="44" height="120" rx="10" fill="#222"/><circle cx="42" cy="28" r="14" fill="#e53935"/><circle cx="42" cy="65" r="14" fill="#5b4a1c"/><circle cx="42" cy="102" r="14" fill="#1d4d2a"/><rect x="90" y="40" width="100" height="90" fill="#8d939b"/><line x1="90" y1="60" x2="190" y2="60" stroke="#fff" stroke-width="6"/>'+CART(140,95,'#1f5fae'))},
+ {l:19,re:/^Ce signal jaune indique/,cap:"B9 : voie prioritaire",svg:()=>SIGN('B9')},
+ {l:19,re:/^3\. Fin de voie prioritaire$/,cap:"B11 : fin de voie prioritaire",svg:()=>SIGN('B11')},
+ {l:19,re:/^Un triangle renversé/,cap:"B1 : céder le passage",svg:()=>SIGN('B1')},
+ {l:19,re:/^Lorsqu'il y a un signal STOP/,cap:"B5 : STOP, arrêt obligatoire",svg:()=>SIGN('B5')},
+ {l:20,re:/^1\. La priorité de droite$/,cap:"Priorité de droite : la voiture rouge vient de ta droite, elle passe en premier",svg:()=>SV(220,180,'<rect x="80" y="0" width="60" height="180" fill="#8d939b"/><rect x="0" y="60" width="220" height="60" fill="#8d939b"/>'+DASHV(110,60)+'<line x1="110" y1="120" x2="110" y2="180" stroke="#fff" stroke-width="3" stroke-dasharray="14 10"/>'+CART(125,155,'#1f5fae')+TXT(165,170,'toi',{b:1})+CART(195,75,'#c4161c',-90)+TXT(195,52,'1er',{c:'#c4161c',b:1})+'<path d="M175 75 H100" stroke="#c4161c" stroke-width="3" stroke-dasharray="5 4"/>')},
+ {l:14,re:/^1\. Voie publique à sens unique$/,cap:"F19 : voie publique à sens unique",svg:()=>SIGN('F19')},
+ {l:26,re:/^1\. Stationnement interdit$/,cap:"E1 : stationnement interdit",svg:()=>SIGN('E1')},
+ {l:26,re:/^2\. Stationnement et arrêt interdits$/,cap:"E3 : arrêt et stationnement interdits",svg:()=>SIGN('E3')},
+ {l:25,re:/^- à moins de 5 mètres en deçà d'un passage pour piétons\.$/,cap:"Pas d'arrêt ni de stationnement sur le passage et 5 m avant. Après le passage, c'est permis.",svg:()=>SV(300,100,'<rect x="0" y="10" width="300" height="80" fill="#8d939b"/>'+[0,1,2,3,4,5].map(i=>'<rect x="130" y="'+(14+i*13)+'" width="40" height="8" fill="#fff"/>').join('')+'<rect x="80" y="62" width="50" height="26" fill="#c4161c" opacity=".35"/>'+ARROWH(80,130,58,'5 m')+CART(40,75,'#888',90)+CART(210,75,'#1f5fae',90)+TXT(40,30,'OK',{c:'#2e9d4f',b:1})+TXT(210,30,'OK',{c:'#2e9d4f',b:1}))},
+ {l:27,re:/^Ce signal indique le commencement d'une zone de stationnement à durée limitée/,cap:"Zone bleue : disque obligatoire les jours ouvrables de 9h à 18h",svg:()=>SV(120,110,'<rect x="10" y="5" width="100" height="100" rx="6" fill="#fff" stroke="#222"/><rect x="18" y="13" width="84" height="84" rx="4" fill="#1f5fae"/>'+TXT(48,72,'P',{s:52,c:'#fff',b:1})+'<circle cx="86" cy="72" r="12" fill="#fff"/><path d="M86 72 V64 M86 72 L92 75" stroke="#1f5fae" stroke-width="2.5"/>')},
+ {l:31,re:/^2\. Profondeur des rainures$/,cap:"Rainures : au moins 1,6 mm (risque d'aquaplaning déjà sous 2 mm)",svg:()=>SV(240,90,'<rect x="10" y="20" width="220" height="50" rx="8" fill="#333"/>'+[0,1,2,3].map(i=>'<rect x="'+(35+i*50)+'" y="20" width="14" height="20" fill="#fff"/>').join('')+'<g stroke="#c4161c" stroke-width="2"><line x1="56" y1="20" x2="56" y2="40"/><path d="M52 20 H60 M52 40 H60"/></g>'+TXT(120,86,'≥ 1,6 mm',{c:'#c4161c',b:1}))},
+ {l:7,re:/^Un passage pour piétons$/,cap:"Passage pour piétons à moins de 20 m : le piéton doit l'emprunter",svg:()=>SV(300,100,'<rect x="0" y="20" width="300" height="60" fill="#8d939b"/>'+[0,1,2,3].map(i=>'<rect x="'+(200+i*0)+'" y="'+(24+i*14)+'" width="40" height="8" fill="#fff"/>').join('')+PED(90,10,.5,'#222')+ARROWH(90,200,96,'moins de 20 m'))},
+];
+let FIGL=-1;
+const figAt=p=>FIGS.filter(f=>f.l===FIGL&&f.re.test(p));
+const figHTML=f=>'<figure class="fig">'+f.svg()+'<figcaption>'+f.cap+'</figcaption></figure>';
+
+function essentialParas(paras){const n=paras.length,key=paras.map(p=>isKeyP(p)||figAt(p).length>0),head=paras.map(isHeadP),li=paras.map(isLiP),keep=new Array(n).fill(false);
  // blocs de liste : si un élément est clé, on garde tout le bloc et sa phrase d'introduction
  for(let i=0;i<n;i++){if(li[i]&&(i===0||!li[i-1])){let j=i;while(j<n&&li[j])j++;if(key.slice(i,j).some(Boolean)){for(let k=i;k<j;k++)keep[k]=true;if(i>0&&!head[i-1])keep[i-1]=true;}i=j-1;}}
  for(let i=0;i<n;i++)if(!head[i]&&!li[i]&&key[i])keep[i]=true;
  // sections : titre + première phrase de contexte si la section contient un point clé
  const out=[];let i=0;
  while(i<n){let j=i+1;if(!head[i]){j=i;}else{while(j<n&&!head[j])j++;}
-  if(head[i]){const body=[];for(let k=i+1;k<j;k++)body.push(k);if(body.some(k=>keep[k])){out.push(paras[i]);const f=body[0];if(f!==undefined&&!keep[f]&&!li[f])keep[f]=true;for(const k of body)if(keep[k])out.push(paras[k]);}i=j;}
+  if(head[i]){const body=[];for(let k=i+1;k<j;k++)body.push(k);if(body.some(k=>keep[k])||figAt(paras[i]).length){out.push(paras[i]);const f=body[0];if(f!==undefined&&!keep[f]&&!li[f])keep[f]=true;for(const k of body)if(keep[k])out.push(paras[k]);}i=j;}
   else{if(keep[i])out.push(paras[i]);i++;}}
  return out.length<8?paras:out;}
 let lessonFull=false;
-function lessonHTML(l){let h="",inList=false;
+function lessonHTML(l){let h="",inList=false,pend=[];const used=new Set();
+ const figs=p=>figAt(p).filter(f=>!used.has(f)&&used.add(f));
  for(const p of l.paras){const isLi=/^(- |\. |• |o )/.test(p);const isHead=!isLi&&p.length<70&&!/[.,;:)]$/.test(p)&&/^[A-ZÉÈÀÂÎÔÙ0-9]/.test(p)&&!/^\d+°/.test(p);
-  if(isLi){if(!inList){h+="<ul>";inList=true;}h+="<li>"+hl(p.replace(/^(- |\. |• |o )/,""))+"</li>";continue;}
-  if(inList){h+="</ul>";inList=false;}
-  h+=isHead?"<h4>"+esc(p)+"</h4>":"<p>"+hl(p)+"</p>";}
- if(inList)h+="</ul>";return h;}
+  if(isLi){if(!inList){h+="<ul>";inList=true;}h+="<li>"+hl(p.replace(/^(- |\. |• |o )/,""))+"</li>";pend=pend.concat(figs(p));continue;}
+  if(inList){h+="</ul>"+pend.map(figHTML).join("");pend=[];inList=false;}
+  h+=(isHead?"<h4>"+esc(p)+"</h4>":"<p>"+hl(p)+"</p>")+figs(p).map(figHTML).join("");}
+ if(inList)h+="</ul>"+pend.map(figHTML).join("");return h;}
 const SPEED=`<table><tr><th>Où ?</th><th>Max</th></tr>
 <tr><td>Autoroute (minimum 70 km/h)</td><td>120</td></tr>
 <tr><td>Route pour automobiles / route 2x2 bandes avec berme centrale, hors agglomération</td><td>120</td></tr>
@@ -248,7 +297,7 @@ function checkDay(){const t=today(),st=S.cur||{};const P=planInfo();
 function vCours(a){let h='<div class="card"><h2>Cours (texte de ton PDF)</h2><p class="mut">Le contenu des leçons est repris tel quel de ton cours. Coche « J\'ai lu » en bas de chaque leçon.</p><div class="row"><button class="btn small sec" onclick="go(\'memo\')">🧮 Mémo chiffres</button><button class="btn small sec" onclick="go(\'synth\')">🗂️ Synthèses Q/R</button></div><div class="list">';
  for(const l of LESSONS){const m=lessonMastery(l.id);h+='<button class="li'+(S.read[l.id]?' read':'')+'" onclick="go(\'lesson:'+l.id+'\')"><span><b>'+lname(l.id)+'</b> · '+esc(l.title)+'</span><span class="pill '+(S.read[l.id]?'ok':'')+'">'+(S.read[l.id]?'✓ lu':'')+(lessonQs(l.id).length?' '+Math.round(m*100)+'%':'')+'</span></button>';}
  a.innerHTML=h+'</div></div>';}
-function vLesson(a,id){id=+id;const l0=LT(id);const l=lessonFull?l0:{paras:id===12?l0.paras.slice(0,14).concat(essentialParas(l0.paras.slice(14))):essentialParas(l0.paras)};let h='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>'+lname(id)+' · '+esc(l0.title)+'</h2><div>'+starBtn('l',id)+'</div><div class="seg"><button class="'+(lessonFull?'':'on')+'" onclick="lessonFull=false;go(\'lesson:'+id+'\')">L\'essentiel</button><button class="'+(lessonFull?'on':'')+'" onclick="lessonFull=true;go(\'lesson:'+id+'\')">Texte complet</button></div><p class="mut">'+(lessonFull?'Tout le texte de ton cours.':'Les phrases clés de ton cours, reprises telles quelles. Chiffres <strong class="n">surlignés</strong>, règles importantes <strong class="k">soulignées</strong>.')+'</p>';
+function vLesson(a,id){id=+id;FIGL=id;const l0=LT(id);const l=lessonFull?l0:{paras:id===12?l0.paras.slice(0,14).concat(essentialParas(l0.paras.slice(14))):essentialParas(l0.paras)};let h='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>'+lname(id)+' · '+esc(l0.title)+'</h2><div>'+starBtn('l',id)+'</div><div class="seg"><button class="'+(lessonFull?'':'on')+'" onclick="lessonFull=false;go(\'lesson:'+id+'\')">L\'essentiel</button><button class="'+(lessonFull?'on':'')+'" onclick="lessonFull=true;go(\'lesson:'+id+'\')">Texte complet</button></div><p class="mut">'+(lessonFull?'Tout le texte de ton cours.':'Les phrases clés de ton cours, reprises telles quelles. Chiffres <strong class="n">surlignés</strong>, règles importantes <strong class="k">soulignées</strong>.')+'</p>';
  if(id===12)h+='<div class="warnbox"><b>Tableau des vitesses</b> — dans ton PDF, les chiffres de ce tableau n\'étaient pas lisibles. Voici les valeurs, reprises des autres leçons de ton cours :'+SPEED+'</div><details><summary>Texte brut du tableau dans le PDF</summary>'+lessonHTML({paras:l.paras.slice(0,14)})+'</details>'+lessonHTML({paras:l.paras.slice(14)});
  else h+=lessonHTML(l);
  const n=lessonQs(id).length;
@@ -259,8 +308,14 @@ function nextBlock(id){const P=planInfo();const day=!P.finished?PLAN[P.done]:nul
   if(unread.length){const nx=unread[0];return'<div class="next"><h3>Et maintenant ?</h3><p class="mut">Tu peux enchaîner avec la suite de ta séance, ou t\'entraîner d\'abord sur cette leçon.</p><button class="btn" onclick="go(\'lesson:'+nx+'\')">Enchaîner : '+lname(nx)+' →</button>'+qb([id],'Quiz '+lname(id),false)+'</div>';}
   if(!st.quiz&&day.length>1)return'<div class="next"><h3>Séance : place au quiz</h3><p class="mut">Tu as lu '+day.map(lname).join(' et ')+'. Le quiz du jour regroupe les deux (et tes erreurs à retravailler). Tu peux aussi faire chaque quiz séparément.</p>'+qb(day,'Quiz du jour : '+day.map(lname).join(' + '),true)+day.map(i=>qb([i],'Quiz '+lname(i),false)).join('')+'</div>';
   if(!st.quiz)return'<div class="next"><h3>Séance : place au quiz</h3>'+qb(day,'Quiz du jour : '+lname(id),true)+'</div>';
-  return'<div class="next"><h3>Suite de la séance</h3><button class="btn" onclick="go(\'today\')">Retour à la séance du jour →</button></div>';}
+  return dayTail(st);}
  const nx=LESSONS.find(l=>l.id===id+1);return nx?'<div class="next"><button class="btn sec" onclick="go(\'lesson:'+nx.id+'\')">Leçon suivante : '+lname(nx.id)+' →</button></div>':'';}
+function dayTail(st){if(!st.rev){const due=Math.min(dueQs(PLAN[S.plan]).length,12);return'<div class="next"><h3>Dernière étape : révision</h3><p class="mut">'+(due?due+' ancienne(s) question(s) à revoir, environ 5 min.':'Aucune ancienne question à revoir aujourd\'hui.')+'</p><button class="btn" onclick="startReview(\'rev\')">'+(due?'Réviser ('+due+')':'Valider cette étape')+' →</button></div>';}
+ return'<div class="next"><h3>Séance terminée 🎉</h3><p class="mut">Lecture, quiz et révision : tout est fait.</p><button class="btn ok" onclick="quiz=null;go(\'today\')">Valider ma séance</button></div>';}
+function dayNext(){const P=planInfo();if(P.finished)return'';const day=PLAN[P.done];const st=S.cur&&S.cur.key==='p'+S.plan?S.cur:{};const unread=day.filter(i=>!S.read[i]);
+ if(unread.length)return'<div class="next"><h3>Suite de ta séance</h3><button class="btn" onclick="go(\'lesson:'+unread[0]+'\')">Lire : '+lname(unread[0])+' →</button></div>';
+ if(!st.quiz)return'<div class="next"><h3>Suite de ta séance : le quiz du jour</h3><button class="btn" onclick="startLessonQuiz(['+day+'],\'quiz\')">Quiz du jour : '+day.map(lname).join(' + ')+' →</button></div>';
+ return dayTail(st);}
 function markRead(id){if(!S.read[id]){S.read[id]=1;addPts(20);save();toast("+20 pts 📘");}go("lesson:"+id);}
 
 function vMemo(a){a.innerHTML='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>Mémo des chiffres (tirés de ton cours)</h2>'+starBtn('memo',0)+'<h3>Vitesses maximales</h3>'+SPEED+
@@ -324,7 +379,7 @@ function startLessonQuiz(ids,flag){if(flag){const P=planInfo();const key=P.finis
  mk(shuffle(list.concat(re)),{title:ids.map(lname).join(" + ")+(re.length?" + "+re.length+" à retravailler":""),flag,re:re.map(q=>q.id)});}
 function startReview(flag,max,free){max=max||12;let d=shuffle(dueQs(flag==='rev'&&!planInfo().finished?PLAN[S.plan]:[]));
  if(!d.length&&free){d=shuffle(QUESTIONS.filter(q=>S.qs[q.id]).sort((x,y)=>qs(x.id).b-qs(y.id).b).slice(0,max));}
- if(!d.length){if(flag){S.cur[flag]=1;save();toast("Rien à réviser aujourd'hui ✓");checkDay();render();}else toast("Rien à réviser pour l'instant");return;}
+ if(!d.length){if(flag){S.cur[flag]=1;save();toast("Rien à réviser aujourd'hui ✓");quiz=null;go('today');}else toast("Rien à réviser pour l'instant");return;}
  mk(d.slice(0,max),{title:"Révision",flag});}
 function seenLessons(){return LESSONS.filter(l=>S.read[l.id]).map(l=>l.id);}
 function startMix(n){const s=seenLessons();mk(shuffle(QUESTIONS.filter(q=>s.includes(q.l))).slice(0,n),{title:"Au hasard"});}
@@ -362,6 +417,8 @@ function endHTML(){const Q=quiz;clearInterval(tick);const ok=Q.ans.filter(x=>x.g
  else{if(!Q.saved){Q.saved=1;if(Q.flag){S.cur[Q.flag]=1;}save();}
   const bad=Q.ans.filter(x=>!x.good);h+='<div class="big">'+ok+'/'+Q.list.length+'</div><b>+'+Q.gained+' points</b><p class="mut">'+(ok/Q.list.length>=.8?'Excellent 👏':'Continue, ça rentre !')+'</p></div>';
   if(bad.length)h+='<div class="card"><h2>Ton bilan : '+bad.length+' erreur(s) à retravailler</h2><p class="mut">Elles seront ajoutées au quiz de ta prochaine leçon et reviendront jusqu\'à ce que tu les maîtrises.</p>'+bad.map(x=>corr(x,false)).join('')+'</div>';}
+ const P=planInfo();const inDay=!Q.exam&&!P.finished&&(Q.flag==='quiz'||Q.flag==='rev'||Q.list.some(it=>PLAN[P.done].includes(it.q.l)));
+ if(inDay)return h+'<div class="card">'+dayNext()+'</div><div class="center"><button class="btn small sec" onclick="quiz=null;go(\'today\');">Retour à l\'accueil</button></div>';
  return h+'<div class="center"><button class="btn" onclick="quiz=null;go(\'today\');">Continuer</button></div>';}
 
 render();
