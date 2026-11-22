@@ -7,15 +7,17 @@
 <title>Permis B Wallonie – Ma théorie</title>
 <style>
 :root{--bg:#f4f6fa;--card:#fff;--ink:#1d2433;--mut:#5d6779;--pri:#1f4e79;--pri2:#2f6fb0;--ok:#1e8e4e;--ko:#c0392b;--warn:#d68910;--gold:#e0a800;--line:#e2e6ee}
-@media (prefers-color-scheme:dark){:root{--bg:#11151c;--card:#1b212c;--ink:#e8ecf3;--mut:#9aa4b5;--pri:#5ea0e6;--pri2:#7db5f0;--line:#2c3442}}
+:root{color-scheme:light}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(70px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
-header{background:var(--pri);color:#fff;padding:14px 16px 12px}
-@media (prefers-color-scheme:dark){header{background:#173a5c}}
-header h1{margin:0;font-size:18px}
-.hstats{display:flex;gap:14px;margin-top:6px;font-size:14px;flex-wrap:wrap}
-.hstats b{font-size:16px}
+header{background:#fff;color:var(--ink);padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:17px;color:var(--pri)}
+.hstats{display:flex;gap:16px;margin-top:4px;font-size:13px;color:var(--mut);flex-wrap:wrap}
+.hstats b{color:var(--ink)}
+.lesson strong.n{background:#fff3b0;padding:0 2px;border-radius:3px}
+.lesson strong.k{text-decoration:underline;text-decoration-color:var(--pri2);text-underline-offset:2px}
+.seg{display:flex;border:1.5px solid var(--pri);border-radius:10px;overflow:hidden;margin:8px 0}.seg button{flex:1;border:0;background:#fff;color:var(--pri);font:inherit;font-weight:600;padding:8px}.seg button.on{background:var(--pri);color:#fff}
 main{max-width:720px;margin:0 auto;padding:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px}
 .card h2{margin:0 0 8px;font-size:17px}
@@ -42,7 +44,6 @@ nav button.on{color:var(--pri);font-weight:700}
 .opt.bad{border-color:var(--ko);background:rgba(192,57,43,.10)}
 .tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--line);color:var(--mut);margin-right:6px}
 .tag.g{background:#fdecea;color:var(--ko)}
-@media (prefers-color-scheme:dark){.tag.g{background:#4a1f1b;color:#ff9b8f}}
 .expl{border-left:4px solid var(--pri2);padding:8px 10px;margin-top:10px;background:rgba(47,111,176,.06);border-radius:0 8px 8px 0}
 .lesson p{margin:6px 0}
 .lesson h4{margin:14px 0 4px;font-size:15px;color:var(--pri)}
@@ -69,8 +70,8 @@ input[type=date],select{font:inherit;padding:8px;border-radius:8px;border:1px so
 </head>
 <body>
 <header>
-  <h1>🚗 Ma théorie permis B · Wallonie</h1>
-  <div class="hstats"><span>⭐ <b id="hPts">0</b> pts</span><span class="flame">🔥 <b id="hStreak">0</b> j</span><span>🎯 <b id="hReady">0</b>% prête</span><span id="hCount"></span></div>
+  <h1>Permis B · Théorie</h1>
+  <div class="hstats"><span><b id="hPts">0</b> pts</span><span>Série <b id="hStreak">0</b> j</span><span>Prête à <b id="hReady">0</b> %</span><span id="hCount"></span></div>
 </header>
 <main id="app"></main>
 <nav id="nav">
@@ -107,7 +108,7 @@ function save(){S.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify
   const snap=await docRef.get();const d=snap&&(snap.data?snap.data():snap);
   if(d&&d.state){const r=JSON.parse(d.state);if((r.updated||0)>(S.updated||0)){S=Object.assign(fresh(),r);fixS();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}render();}}
   else save();
-  toast("☁️ Progression synchronisée");}catch(e){}})();
+  }catch(e){}})();
 
 /* ---------- dates ---------- */
 const pad=n=>String(n).padStart(2,"0");
@@ -145,7 +146,7 @@ let view="today";
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
 function go(v){view=v;quiz=null;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v.split(":")[0]));render();scrollTo(0,0);}
 function header(){$("#hPts").textContent=S.pts;$("#hStreak").textContent=curStreak();$("#hReady").textContent=readiness();
-  const d=diff(today(),EXAM_FROM);$("#hCount").textContent=S.examDate?("📅 examen J-"+Math.max(0,diff(today(),S.examDate))):(d>0?"📅 J-"+d+" avant le 19/12":"📅 période d'examen");}
+  const d=diff(today(),EXAM_FROM);$("#hCount").textContent=S.examDate?("Examen dans "+Math.max(0,diff(today(),S.examDate))+" j"):(d>0?"J-"+d+" (19/12)":"Période d'examen");}
 
 /* ---------- panneaux (SVG) ---------- */
 function signSVG(k){const W='<svg class="sign" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">',E='</svg>';
@@ -169,11 +170,28 @@ function signSVG(k){const W='<svg class="sign" viewBox="0 0 100 100" xmlns="http
  default:return"";}}
 
 /* ---------- rendu du texte de cours ---------- */
+const NUMRE=/(\d+(?:[,.]\d+)?\s?(?:km\/h|km\/u|km|mètres|mètre|m|cm|mm|kg|tonnes|t|heures|heure|h|jours|jour|j|ans|an|mois|secondes|seconde|s|‰|°\/°°|mg\/l|mg|%|bar|tours|degrés|°C)(?![a-zà-ü]))/g;
+const KEYRE=/(interdite?s?|obligatoires?|obligatoirement|jamais|toujours|priorité|céder le passage|cède(?:nt|r)? le passage|ne (?:peu[tx]|pouvez|doi[st]|devez|peuvent|doivent) (?:pas|ni|jamais)|infraction grave|infraction du \d+e degré|retrait immédiat|déchéance|au moins|au maximum|maximum|minimum|sauf)/gi;
+function hl(s){return esc(s).replace(NUMRE,'<strong class="n">$1</strong>').replace(KEYRE,'<strong class="k">$1</strong>');}
+const isLiP=p=>/^(- |\. |• |o )/.test(p);
+const isHeadP=p=>!isLiP(p)&&p.length<70&&!/[.,;:)]$/.test(p)&&/^[A-ZÉÈÀÂÎÔÙ0-9]/.test(p)&&!/^\d+°/.test(p);
+const isKeyP=p=>{NUMRE.lastIndex=0;KEYRE.lastIndex=0;const r=NUMRE.test(p)||KEYRE.test(p);NUMRE.lastIndex=0;KEYRE.lastIndex=0;return r&&!/Regardez|vidéo|animation|^Conseil :?$/i.test(p);};
+function essentialParas(paras){const n=paras.length,key=paras.map(isKeyP),head=paras.map(isHeadP),li=paras.map(isLiP),keep=new Array(n).fill(false);
+ // blocs de liste : si un élément est clé, on garde tout le bloc et sa phrase d'introduction
+ for(let i=0;i<n;i++){if(li[i]&&(i===0||!li[i-1])){let j=i;while(j<n&&li[j])j++;if(key.slice(i,j).some(Boolean)){for(let k=i;k<j;k++)keep[k]=true;if(i>0&&!head[i-1])keep[i-1]=true;}i=j-1;}}
+ for(let i=0;i<n;i++)if(!head[i]&&!li[i]&&key[i])keep[i]=true;
+ // sections : titre + première phrase de contexte si la section contient un point clé
+ const out=[];let i=0;
+ while(i<n){let j=i+1;if(!head[i]){j=i;}else{while(j<n&&!head[j])j++;}
+  if(head[i]){const body=[];for(let k=i+1;k<j;k++)body.push(k);if(body.some(k=>keep[k])){out.push(paras[i]);const f=body[0];if(f!==undefined&&!keep[f]&&!li[f])keep[f]=true;for(const k of body)if(keep[k])out.push(paras[k]);}i=j;}
+  else{if(keep[i])out.push(paras[i]);i++;}}
+ return out.length<8?paras:out;}
+let lessonFull=false;
 function lessonHTML(l){let h="",inList=false;
  for(const p of l.paras){const isLi=/^(- |\. |• |o )/.test(p);const isHead=!isLi&&p.length<70&&!/[.,;:)]$/.test(p)&&/^[A-ZÉÈÀÂÎÔÙ0-9]/.test(p)&&!/^\d+°/.test(p);
-  if(isLi){if(!inList){h+="<ul>";inList=true;}h+="<li>"+esc(p.replace(/^(- |\. |• |o )/,""))+"</li>";continue;}
+  if(isLi){if(!inList){h+="<ul>";inList=true;}h+="<li>"+hl(p.replace(/^(- |\. |• |o )/,""))+"</li>";continue;}
   if(inList){h+="</ul>";inList=false;}
-  h+=isHead?"<h4>"+esc(p)+"</h4>":"<p>"+esc(p)+"</p>";}
+  h+=isHead?"<h4>"+esc(p)+"</h4>":"<p>"+hl(p)+"</p>";}
  if(inList)h+="</ul>";return h;}
 const SPEED=`<table><tr><th>Où ?</th><th>Max</th></tr>
 <tr><td>Autoroute (minimum 70 km/h)</td><td>120</td></tr>
@@ -215,7 +233,7 @@ function vToday(a){const t=today();const P=planInfo();const key=P.finished?('r'+
   const w=weakest();h+=step(st.read,"3. Relire ta leçon la plus faible : "+lname(w),'<button class="btn small sec" onclick="S.cur.read=1;save();go(\'lesson:'+w+'\')">Lire</button>');
   h+='</div>';}
  if(S.days[t])h+='<div class="card center"><div class="big">✅</div><b>Séance terminée aujourd\'hui.</b><p class="mut">Tu peux continuer avec un quiz libre ou un examen blanc pour gagner des points.</p></div>';
- h+='<div class="card"><h2>🔔 Rappel quotidien à 20h</h2><p class="mut">Pour recevoir une notification chaque soir sur ton téléphone.</p><button class="btn sec" onclick="go(\'rappel\')">Configurer le rappel</button></div>';
+ h+='<div class="card"><h2>Rappel quotidien à 20h</h2><p class="mut">Pour recevoir une notification chaque soir sur ton téléphone.</p><button class="btn sec" onclick="go(\'rappel\')">Configurer le rappel</button></div>';
  a.innerHTML=h;checkDay();}
 function step(done,label,btn){return'<div class="step'+(done?' done':'')+'"><div class="ck">'+(done?'✓':'')+'</div><div class="tx">'+label+'<div>'+btn+'</div></div></div>';}
 function weekStrip(){let h='<div class="week">';for(let i=6;i>=0;i--){const d=addDays(today(),-i);h+='<i class="'+(S.days[d]?'on':'')+'">'+parse(d).toLocaleDateString("fr-BE",{weekday:"narrow"})+'</i>';}return h+'</div>';}
@@ -224,10 +242,10 @@ function checkDay(){const t=today(),st=S.cur||{};const P=planInfo();
  if(!P.finished){if(st.key!=='p'+S.plan)return;const ids=PLAN[P.done];if(ids.every(i=>S.read[i])&&st.quiz&&st.rev){S.plan++;S.cur={};if(!S.days[t])markDayDone();else{addPts(30);save();toast('💪 Séance bonus terminée ! +30 pts');}render();}}
  else if(!S.days[t]&&st.key==='r'+t&&st.exam&&st.rev&&st.read){markDayDone();render();}}
 
-function vCours(a){let h='<div class="card"><h2>📘 Cours (texte de ton PDF)</h2><p class="mut">Le contenu des leçons est repris tel quel de ton cours. Coche « J\'ai lu » en bas de chaque leçon.</p><div class="row"><button class="btn small sec" onclick="go(\'memo\')">🧮 Mémo chiffres</button><button class="btn small sec" onclick="go(\'synth\')">🗂️ Synthèses Q/R</button></div><div class="list">';
+function vCours(a){let h='<div class="card"><h2>Cours (texte de ton PDF)</h2><p class="mut">Le contenu des leçons est repris tel quel de ton cours. Coche « J\'ai lu » en bas de chaque leçon.</p><div class="row"><button class="btn small sec" onclick="go(\'memo\')">🧮 Mémo chiffres</button><button class="btn small sec" onclick="go(\'synth\')">🗂️ Synthèses Q/R</button></div><div class="list">';
  for(const l of LESSONS){const m=lessonMastery(l.id);h+='<button class="li" onclick="go(\'lesson:'+l.id+'\')"><span><b>'+lname(l.id)+'</b> · '+esc(l.title)+'</span><span class="pill '+(S.read[l.id]?'ok':'')+'">'+(S.read[l.id]?'✓ lu':'')+(lessonQs(l.id).length?' '+Math.round(m*100)+'%':'')+'</span></button>';}
  a.innerHTML=h+'</div></div>';}
-function vLesson(a,id){id=+id;const l=LT(id);let h='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>'+lname(id)+' · '+esc(l.title)+'</h2><div>'+starBtn('l',id)+'</div>';
+function vLesson(a,id){id=+id;const l0=LT(id);const l=lessonFull?l0:{paras:id===12?l0.paras.slice(0,14).concat(essentialParas(l0.paras.slice(14))):essentialParas(l0.paras)};let h='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>'+lname(id)+' · '+esc(l0.title)+'</h2><div>'+starBtn('l',id)+'</div><div class="seg"><button class="'+(lessonFull?'':'on')+'" onclick="lessonFull=false;go(\'lesson:'+id+'\')">L\'essentiel</button><button class="'+(lessonFull?'on':'')+'" onclick="lessonFull=true;go(\'lesson:'+id+'\')">Texte complet</button></div><p class="mut">'+(lessonFull?'Tout le texte de ton cours.':'Les phrases clés de ton cours, reprises telles quelles. Chiffres <strong class="n">surlignés</strong>, règles importantes <strong class="k">soulignées</strong>.')+'</p>';
  if(id===12)h+='<div class="warnbox"><b>Tableau des vitesses</b> — dans ton PDF, les chiffres de ce tableau n\'étaient pas lisibles. Voici les valeurs, reprises des autres leçons de ton cours :'+SPEED+'</div><details><summary>Texte brut du tableau dans le PDF</summary>'+lessonHTML({paras:l.paras.slice(0,14)})+'</details>'+lessonHTML({paras:l.paras.slice(14)});
  else h+=lessonHTML(l);
  const n=lessonQs(id).length;
@@ -235,7 +253,7 @@ function vLesson(a,id){id=+id;const l=LT(id);let h='<div class="card lesson"><bu
  a.innerHTML=h;}
 function markRead(id){if(!S.read[id]){S.read[id]=1;addPts(20);save();toast("+20 pts 📘");}go("lesson:"+id);}
 
-function vMemo(a){a.innerHTML='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>🧮 Mémo des chiffres (tirés de ton cours)</h2>'+starBtn('memo',0)+'<h3>Vitesses maximales</h3>'+SPEED+
+function vMemo(a){a.innerHTML='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>Mémo des chiffres (tirés de ton cours)</h2>'+starBtn('memo',0)+'<h3>Vitesses maximales</h3>'+SPEED+
  '<h3>Distances</h3><table>'+[["Triangle de danger","30 m (route ordinaire / route pour automobiles) · 100 m (autoroute) · visible à 50 m"],["Dépasser/croiser un cycliste","1 m en agglomération · 1,5 m hors agglomération"],["Feux de croisement de jour","visibilité < 200 m"],["Feux brouillard arrière (obligatoires)","brouillard ou neige, visibilité < 100 m · forte pluie"],["Feux de route interdits","route éclairée pour voir à 100 m · suivre à < 50 m"],["Piéton : passage à moins de","20 m → il doit l'emprunter"],["Arrêt/stationnement interdits","passage piétons/cyclistes + 5 m avant · carrefour 5 m · 20 m avant feux/signaux (sauf ≥ 2 m et véhicule ≤ 1,65 m)"],["Stationnement interdit (arrêt permis)","15 m de part et d'autre d'un arrêt de bus · moins de 1 m devant/derrière · passage libre < 3 m"],["Stationnement sur accotement","laisser 1,5 m aux piétons"],["Signaux de danger","≈ 150 m avant le danger (sauf A45/A47)"],["Chargement","arrière max 1 m (3 m si indivisible + panneau) · hauteur 4 m · largeur 2,55 m"],["Places","conducteur 55 cm · passager 40 cm · banquette 3 places 135 cm"],["Distance de sécurité","vitesse ÷ 2 (en m) · 2 s sec · 3 s mouillé · 4 s neige/verglas"],["Distance de réaction","50 km/h : 14 m · 90 : 25 m · 120 : 33 m"],["Pneus","rainures ≥ 1,6 mm · +0,2 bar long trajet/charge"]].map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join("")+'</table>'+
  '<h3>Masses & permis</h3><table>'+[["MMA max permis B","3 500 kg"],["Remorque","interdite en provisoire · 750 kg (ou ensemble ≤ 3 500 kg)"],["Enfants","< 18 ans et < 1,35 m → dispositif de retenue"]].map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join("")+'</table>'+
  '<h3>Délais & durées</h3><table>'+[["Examen théorique","dès 17 ans · 41/50 · document valable 3 ans · 2 échecs → 12 h d\'auto-école"],["Permis provisoire interdit","nuits de week-end 22h–6h, veille et soir de jour férié 22h–6h"],["Permis oublié","le présenter dans les 5 jours"],["Inapte médicalement","prévenir la commune dans les 4 jours"],["Épilepsie","6 mois après une 1re crise"],["Permis définitif","valable 10 ans"],["Véhicule en panne / publicitaire","24 h / 3 h sur la voie publique"],["Zone bleue","jours ouvrables 9h–18h · 2 h"],["Stationnement semi-mensuel","changer de côté le dernier jour, 19h30–20h"],["Pneus cloutés","1er novembre – 31 mars"],["Pause","toutes les 2 h, au moins 15 min"],["Constat : carte d\'identité","dès 15 ans"]].map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join("")+'</table>'+
@@ -245,20 +263,20 @@ function isFav(k,id){return k==='memo'?!!S.fav.memo:!!S.fav[k][id];}
 function starBtn(k,id){const on=isFav(k,id);return'<button class="btn small sec star" data-k="'+k+'" data-id="'+id+'" onclick="toggleFav(\''+k+'\','+id+',this)">'+(on?'★ Sauvegardé':'☆ Sauvegarder')+'</button>';}
 function toggleFav(k,id,el){if(k==='memo')S.fav.memo=S.fav.memo?0:1;else{if(S.fav[k][id])delete S.fav[k][id];else S.fav[k][id]=Date.now();}save();const on=isFav(k,id);if(el)el.textContent=on?'★ Sauvegardé':'☆ Sauvegarder';toast(on?'⭐ Ajouté à tes favoris':'Retiré des favoris');if(view==='fav')render();}
 function vFav(a){const L=Object.keys(S.fav.l).map(Number),Sy=Object.keys(S.fav.s).map(Number),Qq=Object.keys(S.fav.q).map(Number).map(i=>QUESTIONS[i]).filter(Boolean);
- let h='<div class="card"><h2>⭐ Mes favoris</h2><p class="mut">Tout ce que tu as sauvegardé pour le relire plus tard. Touche « ☆ Sauvegarder » sur une leçon, une synthèse, le mémo ou une question.</p>'+(Qq.length?'<button class="btn" onclick="mk(shuffle(Object.keys(S.fav.q).map(i=>QUESTIONS[+i]).filter(Boolean)),{title:\'Mes questions favorites\'})">Quiz de mes '+Qq.length+' questions favorites</button>':'')+'</div>';
- h+='<div class="card"><h2>📘 Fiches de cours ('+(L.length+(S.fav.memo?1:0))+')</h2><div class="list">'+(S.fav.memo?'<button class="li" onclick="go(\'memo\')"><span>🧮 Mémo des chiffres</span><span class="pill">›</span></button>':'')+L.sort((x,y)=>x-y).map(i=>'<button class="li" onclick="go(\'lesson:'+i+'\')"><span><b>'+lname(i)+'</b> · '+esc(LT(i).title)+'</span><span class="pill">'+Math.round(lessonMastery(i)*100)+'%</span></button>').join('')+(!L.length&&!S.fav.memo?'<p class="mut">Aucune fiche sauvegardée.</p>':'')+'</div></div>';
- h+='<div class="card"><h2>🗂️ Synthèses ('+Sy.length+')</h2>'+(Sy.length?Sy.sort((x,y)=>x-y).map(i=>synthBlock(LT(i),true)).join(''):'<p class="mut">Aucune synthèse sauvegardée.</p>')+'</div>';
- h+='<div class="card"><h2>❓ Questions ('+Qq.length+')</h2>'+(Qq.length?Qq.map(q=>'<div style="border-top:1px solid var(--line);padding:8px 0"><span class="tag">'+lname(q.l)+'</span>'+(q.g?'<span class="tag g">5 pts</span>':'')+'<br><b>'+esc(q.q)+'</b><br><span style="color:var(--ok)">✓ '+esc(q.o[q.a])+'</span><div class="mut">'+esc(q.e)+'</div>'+starBtn('q',q.id)+'</div>').join(''):'<p class="mut">Aucune question sauvegardée.</p>')+'</div>';
+ let h='<div class="card"><h2>Mes favoris</h2><p class="mut">Tout ce que tu as sauvegardé pour le relire plus tard. Touche « ☆ Sauvegarder » sur une leçon, une synthèse, le mémo ou une question.</p>'+(Qq.length?'<button class="btn" onclick="mk(shuffle(Object.keys(S.fav.q).map(i=>QUESTIONS[+i]).filter(Boolean)),{title:\'Mes questions favorites\'})">Quiz de mes '+Qq.length+' questions favorites</button>':'')+'</div>';
+ h+='<div class="card"><h2>Fiches de cours ('+(L.length+(S.fav.memo?1:0))+')</h2><div class="list">'+(S.fav.memo?'<button class="li" onclick="go(\'memo\')"><span>🧮 Mémo des chiffres</span><span class="pill">›</span></button>':'')+L.sort((x,y)=>x-y).map(i=>'<button class="li" onclick="go(\'lesson:'+i+'\')"><span><b>'+lname(i)+'</b> · '+esc(LT(i).title)+'</span><span class="pill">'+Math.round(lessonMastery(i)*100)+'%</span></button>').join('')+(!L.length&&!S.fav.memo?'<p class="mut">Aucune fiche sauvegardée.</p>':'')+'</div></div>';
+ h+='<div class="card"><h2>Synthèses ('+Sy.length+')</h2>'+(Sy.length?Sy.sort((x,y)=>x-y).map(i=>synthBlock(LT(i),true)).join(''):'<p class="mut">Aucune synthèse sauvegardée.</p>')+'</div>';
+ h+='<div class="card"><h2>Questions ('+Qq.length+')</h2>'+(Qq.length?Qq.map(q=>'<div style="border-top:1px solid var(--line);padding:8px 0"><span class="tag">'+lname(q.l)+'</span>'+(q.g?'<span class="tag g">5 pts</span>':'')+'<br><b>'+esc(q.q)+'</b><br><span style="color:var(--ok)">✓ '+esc(q.o[q.a])+'</span><div class="mut">'+esc(q.e)+'</div>'+starBtn('q',q.id)+'</div>').join(''):'<p class="mut">Aucune question sauvegardée.</p>')+'</div>';
  a.innerHTML=h;}
 function synthBlock(l,open){const qq=lessonQs(l.id);return'<details'+(open?' open':'')+'><summary>'+lname(l.id)+' · '+esc(l.title)+'</summary><div>'+starBtn('s',l.id)+'</div><ul>'+qq.map(q=>'<li>'+(q.g?'<span class="tag g">5 pts</span>':'')+esc(q.q)+' → <b>'+esc(q.o[q.a])+'</b> <a href="javascript:void 0" onclick="toggleFav(\'q\','+q.id+',null);this.textContent=isFav(\'q\','+q.id+')?\'★\':\'☆\'" style="text-decoration:none;color:var(--gold)">'+(isFav('q',q.id)?'★':'☆')+'</a></li>').join("")+'</ul></details>';}
-function vSynth(a,id){let h='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>🗂️ Synthèses questions / réponses</h2><p class="mut">Les points clés de chaque leçon sous forme de fiches.</p>';
+function vSynth(a,id){let h='<div class="card lesson"><button class="btn small sec" onclick="go(\'cours\')">← Cours</button><h2>Synthèses questions / réponses</h2><p class="mut">Les points clés de chaque leçon sous forme de fiches.</p>';
  for(const l of LESSONS){if(!lessonQs(l.id).length)continue;h+=synthBlock(l,false);}
  a.innerHTML=h+'</div>';}
 
-function vQuiz(a){let h='<div class="card"><h2>❓ Quiz libre</h2><p class="mut">+10 pts par bonne réponse (+5 si faute grave).</p><button class="btn" onclick="startReview(null,15,true)">🔁 Mes questions à revoir</button><button class="btn sec" onclick="startMix(15)">🎲 15 questions au hasard (matière vue)</button><button class="btn sec" onclick="startGraves()">⚠️ Fautes graves (5 pts)</button></div><div class="card"><h2>Par leçon</h2><div class="list">';
+function vQuiz(a){let h='<div class="card"><h2>Quiz libre</h2><p class="mut">+10 pts par bonne réponse (+5 si faute grave).</p><button class="btn" onclick="startReview(null,15,true)">🔁 Mes questions à revoir</button><button class="btn sec" onclick="startMix(15)">🎲 15 questions au hasard (matière vue)</button><button class="btn sec" onclick="startGraves()">⚠️ Fautes graves (5 pts)</button></div><div class="card"><h2>Par leçon</h2><div class="list">';
  for(const l of LESSONS){const n=lessonQs(l.id).length;if(!n)continue;h+='<button class="li" onclick="startLessonQuiz(['+l.id+'])"><span><b>'+lname(l.id)+'</b> · '+esc(l.title)+'</span><span class="pill">'+n+' q · '+Math.round(lessonMastery(l.id)*100)+'%</span></button>';}
  a.innerHTML=h+'</div></div>';}
-function vExam(a){const ex=S.exams.slice(-8).reverse();let h='<div class="card"><h2>📝 Examen blanc</h2><p>Comme à l\'examen en Wallonie : <b>50 questions</b>, réussite à <b>41/50</b>. Une erreur ordinaire = −1 point, une <b>faute grave</b> (infraction du 3e/4e degré, vitesse, sièges enfants…) = <b>−5 points</b>. « Je ne sais pas » = −1 point.</p><label class="row"><input type="checkbox" id="tmr" checked> Chrono : 15 secondes par question, comme à l\'examen (sinon, la question compte comme « je ne sais pas »)</label><button class="btn" onclick="startExam()">Lancer un examen blanc</button></div>';
+function vExam(a){const ex=S.exams.slice(-8).reverse();let h='<div class="card"><h2>Examen blanc</h2><p>Comme à l\'examen en Wallonie : <b>50 questions</b>, réussite à <b>41/50</b>. Une erreur ordinaire = −1 point, une <b>faute grave</b> (infraction du 3e/4e degré, vitesse, sièges enfants…) = <b>−5 points</b>. « Je ne sais pas » = −1 point.</p><label class="row"><input type="checkbox" id="tmr" checked> Chrono : 15 secondes par question, comme à l\'examen (sinon, la question compte comme « je ne sais pas »)</label><button class="btn" onclick="startExam()">Lancer un examen blanc</button></div>';
  if(ex.length)h+='<div class="card"><h2>Derniers résultats</h2><table><tr><th>Date</th><th>Score</th><th>Fautes graves</th></tr>'+ex.map(e=>'<tr><td>'+fdate(e.d)+'</td><td style="color:'+(e.s>=41?'var(--ok)':'var(--ko)')+'"><b>'+e.s+'/50</b></td><td>'+e.g+'</td></tr>').join("")+'</table></div>';
  a.innerHTML=h;}
 function vStats(a){const r=readiness();let h='<div class="card center"><div class="big">'+r+'%</div><div class="bar"><i style="width:'+r+'%"></i></div><p class="mut">Préparation globale (30 % lecture, 50 % questions maîtrisées, 20 % meilleur examen blanc)</p></div>';
@@ -266,7 +284,7 @@ function vStats(a){const r=readiness();let h='<div class="card center"><div clas
  h+='<div class="card"><h2>Date d\'examen</h2><p class="mut">Quand tu connais ta date, indique-la ici pour le compte à rebours.</p><input type="date" id="exd" value="'+(S.examDate||'')+'" min="2026-11-22" onchange="S.examDate=this.value;save();header();toast(\'Date enregistrée\')"></div>';
  h+='<div class="card"><h2>Maîtrise par leçon</h2>'+LESSONS.filter(l=>lessonQs(l.id).length).map(l=>{const m=Math.round(lessonMastery(l.id)*100);return'<div style="margin:8px 0"><div class="row" style="justify-content:space-between"><span>'+lname(l.id)+'</span><span class="pill">'+m+'%</span></div><div class="bar"><i style="width:'+m+'%"></i></div></div>';}).join("")+'</div>';
  h+='<div class="card"><h2>Badges</h2>'+badges()+'</div>';
- h+='<div class="card"><h2>🔄 Transférer ma progression</h2><p class="mut">Pour passer de l\'appli web à l\'appli Android (ou l\'inverse) : <b>Exporter</b> ici, copier le code, puis <b>Importer</b> dans l\'autre appli.</p><button class="btn sec" onclick="doExport()">Exporter</button><button class="btn sec" onclick="document.getElementById(\'impbox\').style.display=\'block\'">Importer</button><div id="expbox" style="display:none"><textarea id="expta" readonly style="width:100%;height:90px;font-size:12px"></textarea><button class="btn small" onclick="copyExp()">Copier le code</button></div><div id="impbox" style="display:none"><textarea id="impta" placeholder="Colle ton code ici" style="width:100%;height:90px;font-size:12px"></textarea><button class="btn small" onclick="doImport()">Remplacer ma progression par ce code</button></div></div>';
+ h+='<div class="card"><h2>Transférer ma progression</h2><p class="mut">Pour passer de l\'appli web à l\'appli Android (ou l\'inverse) : <b>Exporter</b> ici, copier le code, puis <b>Importer</b> dans l\'autre appli.</p><button class="btn sec" onclick="doExport()">Exporter</button><button class="btn sec" onclick="document.getElementById(\'impbox\').style.display=\'block\'">Importer</button><div id="expbox" style="display:none"><textarea id="expta" readonly style="width:100%;height:90px;font-size:12px"></textarea><button class="btn small" onclick="copyExp()">Copier le code</button></div><div id="impbox" style="display:none"><textarea id="impta" placeholder="Colle ton code ici" style="width:100%;height:90px;font-size:12px"></textarea><button class="btn small" onclick="doImport()">Remplacer ma progression par ce code</button></div></div>';
  h+='<div class="card"><details><summary>Réinitialiser</summary><p class="mut">Efface toute ta progression.</p><button class="btn small" style="background:var(--ko)" onclick="if(this.dataset.c){S=fresh();save();go(\'today\');}else{this.dataset.c=1;this.textContent=\'Confirmer : tout effacer\';}">Tout effacer</button></details></div>';
  a.innerHTML=h;}
 function badges(){const B=[["🌱","Première séance",Object.keys(S.days).length>=1],["🔥","Série de 3 jours",S.streak>=3],["🔥🔥","Série de 7 jours",S.streak>=7],["🏅","Série de 14 jours",S.streak>=14],["📘","10 leçons lues",Object.keys(S.read).length>=10],["🎓","Toute la matière vue",S.plan>=PLAN.length],["✅","1er examen blanc réussi",S.exams.some(e=>e.s>=41)],["🏆","Examen blanc ≥ 47/50",S.best>=47],["💯","1000 points",S.pts>=1000]];
@@ -280,9 +298,9 @@ async function scheduleApp(h,m){const L=LN();if(!L){toast("Notifications indispo
  await L.schedule({notifications:[{id:20,title:"🚗 Ta séance de théorie t'attend",body:"20-30 min pour garder ta série 🔥 Allez, on y va !",schedule:{on:{hour:h,minute:m},allowWhileIdle:true}}]});
  S.notif={h,m};save();toast("🔔 Rappel programmé à "+h+"h"+pad(m));render();}catch(e){toast("Erreur : "+(e&&e.message||e));}}
 if(IS_APP)setTimeout(()=>{if(!S.notif)scheduleApp(20,0);},1500);
-function vRappelApp(a){const n=S.notif;a.innerHTML='<div class="card"><button class="btn small sec" onclick="go(\'today\')">← Retour</button><h2>🔔 Rappel quotidien</h2><p>'+(n?'Rappel actif chaque jour à <b>'+n.h+'h'+pad(n.m)+'</b>.':'Aucun rappel programmé.')+'</p><div class="row"><input type="time" id="rt" value="'+(n?pad(n.h)+':'+pad(n.m):'20:00')+'"><button class="btn" onclick="const v=$(\'#rt\').value.split(\':\');scheduleApp(+v[0],+v[1])">Programmer</button></div><p class="mut">Si la notification n\'arrive pas : Réglages Android → Applis → Permis B → Notifications (autoriser), et Batterie → « Sans restriction ».</p></div>';}
+function vRappelApp(a){const n=S.notif;a.innerHTML='<div class="card"><button class="btn small sec" onclick="go(\'today\')">← Retour</button><h2>Rappel quotidien</h2><p>'+(n?'Rappel actif chaque jour à <b>'+n.h+'h'+pad(n.m)+'</b>.':'Aucun rappel programmé.')+'</p><div class="row"><input type="time" id="rt" value="'+(n?pad(n.h)+':'+pad(n.m):'20:00')+'"><button class="btn" onclick="const v=$(\'#rt\').value.split(\':\');scheduleApp(+v[0],+v[1])">Programmer</button></div><p class="mut">Si la notification n\'arrive pas : Réglages Android → Applis → Permis B → Notifications (autoriser), et Batterie → « Sans restriction ».</p></div>';}
 function vRappel(a){if(IS_APP)return vRappelApp(a);const ics=icsText();const gcal="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent("🚗 Théorie permis : séance du jour (20-30 min)")+"&details="+encodeURIComponent("Ouvre ton appli : "+APP_URL)+"&dates=20261122T200000/20261122T203000&ctz=Europe/Brussels&recur="+encodeURIComponent("RRULE:FREQ=DAILY;UNTIL=20270110T230000Z");
- a.innerHTML='<div class="card"><button class="btn small sec" onclick="go(\'today\')">← Retour</button><h2>🔔 Rappel chaque soir à 20h</h2><p>Une page web ne peut pas envoyer seule une notification programmée sur Android. La solution fiable : un événement quotidien à 20h dans ton agenda Google, qui te notifie et contient le lien vers l\'appli.</p><h3>Option 1 (la plus simple) : Google Agenda</h3><ol><li>Touche le bouton ci-dessous (ça ouvre Google Agenda).</li><li>Vérifie que la répétition indique « Tous les jours » et l\'heure 20:00.</li><li>Dans « Notification », choisis « Au moment de l\'événement », puis <b>Enregistrer</b>.</li></ol><a class="btn" href="'+gcal+'" target="_blank" rel="noopener">Ajouter à Google Agenda</a><h3>Option 2 : fichier agenda (.ics)</h3><p class="mut">Il contient le rappel quotidien à 20h jusqu\'au 10 janvier, avec une alarme.</p><button class="btn sec" id="dlics">Télécharger le fichier .ics</button><h3>Option 3 : réveil Android</h3><p class="mut">Horloge → Alarme → 20:00 → Répéter tous les jours → libellé « Théorie permis ».</p></div>';
+ a.innerHTML='<div class="card"><button class="btn small sec" onclick="go(\'today\')">← Retour</button><h2>Rappel chaque soir à 20h</h2><p>Une page web ne peut pas envoyer seule une notification programmée sur Android. La solution fiable : un événement quotidien à 20h dans ton agenda Google, qui te notifie et contient le lien vers l\'appli.</p><h3>Option 1 (la plus simple) : Google Agenda</h3><ol><li>Touche le bouton ci-dessous (ça ouvre Google Agenda).</li><li>Vérifie que la répétition indique « Tous les jours » et l\'heure 20:00.</li><li>Dans « Notification », choisis « Au moment de l\'événement », puis <b>Enregistrer</b>.</li></ol><a class="btn" href="'+gcal+'" target="_blank" rel="noopener">Ajouter à Google Agenda</a><h3>Option 2 : fichier agenda (.ics)</h3><p class="mut">Il contient le rappel quotidien à 20h jusqu\'au 10 janvier, avec une alarme.</p><button class="btn sec" id="dlics">Télécharger le fichier .ics</button><h3>Option 3 : réveil Android</h3><p class="mut">Horloge → Alarme → 20:00 → Répéter tous les jours → libellé « Théorie permis ».</p></div>';
  $("#dlics").onclick=async()=>{try{const d=await claude.use("downloads");if(!d)throw 0;await d.save({filename:"rappel-permis-20h.ics",data:ics});}catch(e){toast("Téléchargement indisponible ici : utilise l'option 1");}};}
 function icsText(){return["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//permis-b//FR","BEGIN:VEVENT","UID:permis-b-20h@study","DTSTAMP:20261122T150000Z","DTSTART;TZID=Europe/Brussels:20261122T200000","DTEND;TZID=Europe/Brussels:20261122T203000","RRULE:FREQ=DAILY;UNTIL=20270110T230000Z","SUMMARY:🚗 Théorie permis : séance du jour","DESCRIPTION:20-30 min. Ouvre ton appli : "+APP_URL,"URL:"+APP_URL,"BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:Séance de théorie du permis","TRIGGER:PT0M","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");}
 
